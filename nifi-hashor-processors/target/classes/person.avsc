@@ -1,0 +1,18 @@
+{"namespace": "com.bigdatums.avro",
+ "type": "record",
+ "name": "BdPerson",
+ "fields": [
+     {"name": "id", "type": "int"},
+     {"name": "username",  "type": ["string", "null"]},
+     {"name": "email_address",  "type": ["string", "null"]},
+     {"name": "phone_number",  "type": ["string", "null"]},
+     {"name": "first_name",  "type": ["string", "null"]},
+     {"name": "last_name",  "type": ["string", "null"]},
+     {"name": "middle_name",  "type": ["string", "null"]},
+     {"name": "sex",  "type": ["string", "null"]},
+     {"name": "birthdate", "type": ["string", "null"]},
+     {"name": "join_date", "type": ["string", "null"]},
+     {"name": "previous_logins", "type": ["int", "null"]},
+     {"name": "last_ip", "type": ["string", "null"]}
+ ]
+}
