@@ -1,8 +1,0 @@
--------------------------------------------------------------------------------
-Test set: itbi.nifi.processor.processors.hashor.ContenHashingTest
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.385 s <<< FAILURE! - in itbi.nifi.processor.processors.hashor.ContenHashingTest
-testSingleAvroMessage(itbi.nifi.processor.processors.hashor.ContenHashingTest)  Time elapsed: 1.303 s  <<< FAILURE!
-org.junit.ComparisonFailure: expected:<[[{"name": "Alyssa", "favorite_number": 256, "favorite_color": null}]]> but was:<[{"name": "Alyssa", "favorite_number": 256, "favorite_color": null}]>
-	at itbi.nifi.processor.processors.hashor.ContenHashingTest.testSingleAvroMessage(ContenHashingTest.java:53)
-

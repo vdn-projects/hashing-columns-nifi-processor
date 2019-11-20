@@ -24,6 +24,8 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -43,10 +45,6 @@ import org.apache.nifi.processor.io.StreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
-//import org.apache.nifi.security.util.crypto.HashAlgorithm;
-//import org.apache.nifi.security.util.crypto.HashService;
-
-
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -54,8 +52,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import static itbi.nifi.processor.processors.hashor.CsvProcessor.*;
 
 @Tags({"hashing", "sha"})
 @CapabilityDescription("Hash a column from a content pointed by flowfile")
@@ -91,7 +87,7 @@ public class ContenHashing extends AbstractProcessor {
                     "There are many things to consider when picking an algorithm; it is recommended to use the most secure algorithm possible.")
             .required(true)
             .allowableValues("MD2", "MD5", "SHA224", "SHA256", "SHA512")
-            .defaultValue("SHA224")
+            .defaultValue("SHA256")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
@@ -156,7 +152,7 @@ public class ContenHashing extends AbstractProcessor {
         if ( flowFile == null ) {
             return;
         }
-
+        final StopWatch stopWatch = new StopWatch(true);
         final ComponentLog logger = getLogger();
 
         // Determine the algorithm to use
@@ -184,7 +180,6 @@ public class ContenHashing extends AbstractProcessor {
         logger.debug("Generating {} hash of content", new Object[]{algorithmName});
 
         try {
-            final StopWatch stopWatch = new StopWatch(true);
             //Write to content file
             // This uses a closure acting as a StreamCallback to do the writing of the new content to the flowfile
                 final boolean useContainer = false;
@@ -192,71 +187,90 @@ public class ContenHashing extends AbstractProcessor {
                 flowFile = session.write(flowFile, new StreamCallback() {
                 @Override
                 public void process(final InputStream rawIn, final OutputStream rawOut) throws IOException {
-                    if(outputType == "avro") {
+                    if(outputType.equals("avro")) {
                         final GenericData genericData = GenericData.get();
-                        GenericRecord record = null;
+
                         try (final InputStream in = new BufferedInputStream(rawIn);
                              final OutputStream out = new BufferedOutputStream(rawOut);
                              final DataFileStream<GenericRecord> reader = new DataFileStream<>(in, new GenericDatumReader<>())) {
                             Schema schema = reader.getSchema();
                             DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
-                            DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(datumWriter);
-                            dataFileWriter.create(schema, out);
 
-                            while(reader.hasNext()){
-                                record = reader.next(record);
-                                GenericRecord out_record = new GenericData.Record(schema);
+                            try(DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(datumWriter)){
+                                dataFileWriter.create(schema, out);
 
-                                for (Schema.Field field: schema.getFields()
-                                ) {
-                                    boolean hash_flag = false;
-                                    for (String field_to_hash:fieldsToHash
+                                GenericRecord record = null;
+                                while(reader.hasNext()){
+                                    record = reader.next(record);
+                                    GenericRecord outRecord = new GenericData.Record(schema);
+
+                                    for (Schema.Field field: schema.getFields()
                                     ) {
-                                        if(field.name().equals(field_to_hash)){
-                                            hash_flag = true;
-                                            break;
+                                        boolean hash_flag = false;
+                                        for (String field_to_hash:fieldsToHash
+                                        ) {
+                                            if(field.name().equals(field_to_hash)){
+                                                hash_flag = true;
+                                                break;
+                                            }
+                                        }
+                                        if(hash_flag){
+                                            outRecord.put(field.name(), getHash(record.get(field.name()).toString().getBytes(), algorithmName));
+                                        }
+                                        else{
+                                            outRecord.put(field.name(), record.get(field.name()));
                                         }
                                     }
-                                    if(hash_flag){
-                                        out_record.put(field.name(), getHash(record.get(field.name()).toString().getBytes(), algorithmName));
-                                    }
-                                    else{
-                                        out_record.put(field.name(), record.get(field.name()));
-                                    }
+                                    dataFileWriter.append(outRecord);
                                 }
-                                dataFileWriter.append(out_record);
                             }
-                            dataFileWriter.close();
                         } catch (Exception e) {
-                            //logger.error("Failed to handling record during hashing process", e);
+                            logger.error("[AVRO] Failed to handling record during hashing process", e);
                             throw new RuntimeException("Hashing avro record error: " + e.getMessage());
                         }
                     }
-                    else if (outputType == "csv"){
-                    //TODO: Handling output csv format file
-                        try {
-                            final String csvCompatibility = new AllowableValue("Default", "Default/Basic",
-                                    "Default Format").getValue();
+                    else if (outputType.equals("csv")){
+                        try (final InputStream in = new BufferedInputStream(rawIn);
+                             final OutputStream out = new BufferedOutputStream(rawOut);
+                             final DataFileStream<GenericRecord> reader = new DataFileStream<>(in, new GenericDatumReader<>())) {
+                            Schema schema = reader.getSchema();
 
-                            final String csvRecordDelimiter = "\n";
-                            final String csvSortDirection = "A";    //A: Ascending; D: Descending
-                            final String csvSortFIELD = "F";        //F: Field Name, P: Place attribute
-                            CsvBundle bundle = generateCsvPrinter(csvRecordDelimiter, csvCompatibility);
-                            try (final InputStream in = new BufferedInputStream(rawIn);
-                                 final OutputStream out = new BufferedOutputStream(rawOut);
-                                 final DataFileStream<GenericRecord> reader = new DataFileStream<>(in,
-                                         new GenericDatumReader<GenericRecord>())) {
-                                List<Column> columns = extractColumns(reader.getSchema(),
-                                        csvSortDirection.equals("D"), csvSortFIELD.equals("F"));
+                            //Initalize header based on schema
+                            int headerLength = schema.getFields().size();
+                            String header[] = new String[headerLength];
+                            for (int i = 0; i < headerLength; i++){
+                                header[i] = schema.getFields().get(i).name();
+                            }
 
+                            try (   OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+                                    CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(header));){
                                 GenericRecord record = null;
-                                while (reader.hasNext()) {
+                                while(reader.hasNext()){
                                     record = reader.next(record);
-                                    processRecord(bundle.getPrinter(), record, columns);
-//                                    out.write(bundle.getWriter().toString().getBytes());
+                                    List<Object> outRecord = new ArrayList<>();
+
+                                    for (Schema.Field field: schema.getFields()
+                                    ) {
+                                        boolean hash_flag = false;
+                                        for (String field_to_hash:fieldsToHash
+                                        ) {
+                                            if(field.name().equals(field_to_hash)){
+                                                hash_flag = true;
+                                                break;
+                                            }
+                                        }
+                                        if(hash_flag){
+                                            outRecord.add(getHash(record.get(field.name()).toString().getBytes(), algorithmName));
+                                        }
+                                        else{
+                                            outRecord.add(record.get(field.name()));
+                                        }
+                                    }
+                                    csvPrinter.printRecord(outRecord);
                                 }
                             }
                         } catch (Exception e) {
+                            logger.error("[CSV] Failed to handling record during hashing process", e);
                             throw new RuntimeException("Hashing csv record error: " + e.getMessage());
                         }
                     }
@@ -267,8 +281,8 @@ public class ContenHashing extends AbstractProcessor {
             session.getProvenanceReporter().modifyAttributes(flowFile);
             session.getProvenanceReporter().modifyContent(flowFile, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
 
-            if(outputType == "csv"){
-                flowFile = session.putAttribute(flowFile, CoreAttributes.MIME_TYPE.key(), "test/csv");
+            if(outputType.equals("csv")){
+                flowFile = session.putAttribute(flowFile, CoreAttributes.MIME_TYPE.key(), "text/csv");
             }
             session.transfer(flowFile, REL_SUCCESS);
 
