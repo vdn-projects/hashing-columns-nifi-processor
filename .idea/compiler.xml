@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="nifi-hashor-nar" />
+        <module name="nifi-hashor-processors" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="nifi-hashor" target="11" />
+      <module name="nifi-hashor-nar" target="11" />
+      <module name="nifi-hashor-processors" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
