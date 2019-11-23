@@ -17,19 +17,25 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.nifi</groupId>
-        <artifactId>nifi-nar-bundles</artifactId>
-        <version>1.10.0</version>
+        <groupId>vanducng.dev</groupId>
+        <artifactId>nifi-hash-column-processor</artifactId>
+        <version>1.0</version>
     </parent>
 
-    <groupId>vanducng.dev</groupId>
-    <artifactId>nifi-hash-column-processor</artifactId>
+    <artifactId>nifi-HashColumn-nar</artifactId>
     <version>1.0</version>
-    <packaging>pom</packaging>
+    <packaging>nar</packaging>
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <source.skip>true</source.skip>
+    </properties>
 
-    <modules>
-        <module>nifi-HashColumn-processors</module>
-        <module>nifi-HashColumn-nar</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>vanducng.dev</groupId>
+            <artifactId>nifi-HashColumn-processors</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 
 </project>
