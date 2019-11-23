@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package itbi.nifi.processor.processors.hashor;
 
 import org.apache.avro.Schema;
@@ -182,9 +183,9 @@ public class ContenHashing extends AbstractProcessor {
         try {
             //Write to content file
             // This uses a closure acting as a StreamCallback to do the writing of the new content to the flowfile
-                final boolean useContainer = false;
-                final boolean wrapSingleRecord = true;
-                flowFile = session.write(flowFile, new StreamCallback() {
+            final boolean useContainer = false;
+            final boolean wrapSingleRecord = true;
+            flowFile = session.write(flowFile, new StreamCallback() {
                 @Override
                 public void process(final InputStream rawIn, final OutputStream rawOut) throws IOException {
                     if(outputType.equals("avro")) {
@@ -215,7 +216,7 @@ public class ContenHashing extends AbstractProcessor {
                                             }
                                         }
                                         if(hash_flag){
-                                            outRecord.put(field.name(), getHash(record.get(field.name()).toString().getBytes(), algorithmName));
+                                            outRecord.put(field.name(), getHash(record.get(field.name()), algorithmName));
                                         }
                                         else{
                                             outRecord.put(field.name(), record.get(field.name()));
@@ -260,7 +261,7 @@ public class ContenHashing extends AbstractProcessor {
                                             }
                                         }
                                         if(hash_flag){
-                                            outRecord.add(getHash(record.get(field.name()).toString().getBytes(), algorithmName));
+                                            outRecord.add(getHash(record.get(field.name()), algorithmName));
                                         }
                                         else{
                                             outRecord.add(record.get(field.name()));
@@ -293,7 +294,13 @@ public class ContenHashing extends AbstractProcessor {
     }
 
     //Available algorithms: MD2, MD5, SHA-224, SHA-256, SHA-384, SHA-512
-    public static String getHash(byte[] inputBytes, String algorithm) throws NoSuchAlgorithmException {
+    public static String getHash(Object inputObject, String algorithm) throws NoSuchAlgorithmException {
+        // Return empty if input is empty or null
+        if(inputObject == null) return "";
+        if(inputObject.toString().equals("")) return "";
+
+        // Convert to byte array when not null or empty
+        byte[] inputBytes = inputObject.toString().getBytes();
         MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
         messageDigest.update(inputBytes);
         byte[] digestedBytes = messageDigest.digest();

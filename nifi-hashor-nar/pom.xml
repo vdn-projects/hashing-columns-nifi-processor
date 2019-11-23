@@ -23,7 +23,7 @@
     </parent>
 
     <artifactId>nifi-hashor-nar</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.3</version>
     <packaging>nar</packaging>
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
