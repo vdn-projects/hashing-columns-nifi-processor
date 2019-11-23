@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/nifi-HashColumn-nar/nifi-HashColumn-nar.iml" filepath="$PROJECT_DIR$/nifi-HashColumn-nar/nifi-HashColumn-nar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nifi-HashColumn-processors/nifi-HashColumn-processors.iml" filepath="$PROJECT_DIR$/nifi-HashColumn-processors/nifi-HashColumn-processors.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nifi-hash-column-processor.iml" filepath="$PROJECT_DIR$/nifi-hash-column-processor.iml" />
       <module fileurl="file://$PROJECT_DIR$/nifi-hashor.iml" filepath="$PROJECT_DIR$/nifi-hashor.iml" />
       <module fileurl="file://$PROJECT_DIR$/nifi-hashor-nar/nifi-hashor-nar.iml" filepath="$PROJECT_DIR$/nifi-hashor-nar/nifi-hashor-nar.iml" />
       <module fileurl="file://$PROJECT_DIR$/nifi-hashor-processors/nifi-hashor-processors.iml" filepath="$PROJECT_DIR$/nifi-hashor-processors/nifi-hashor-processors.iml" />

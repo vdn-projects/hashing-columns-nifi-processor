@@ -7,10 +7,15 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="nifi-hashor-nar" />
+        <module name="nifi-HashColumn-processors" />
         <module name="nifi-hashor-processors" />
+        <module name="nifi-HashColumn-nar" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="nifi-hash-column-processor" target="11" />
+      <module name="nifi-HashColumn-nar" target="11" />
+      <module name="nifi-HashColumn-processors" target="11" />
       <module name="nifi-hashor" target="11" />
       <module name="nifi-hashor-nar" target="11" />
       <module name="nifi-hashor-processors" target="11" />
