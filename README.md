@@ -1,8 +1,8 @@
 # Nifi hash column custom processor
 ## Introduction
-There are standard hashing processors but they mostly work with flowfile's attribute or a whole content, while we only interest in partial content data. This project is to build a custom processor to perform the task of hashing specific columns with interested algorithms including: `MD2, MD5, SHA224, SHA256 and SHA512`. As our particular purpose requires the outcome in csv format, then the csv output support is included in this project as well.
+There are standard hashing processors but they mostly work with flowfile's attribute or a whole content, while we are only interested in partial content data. This project is to build a custom processor to perform the task of hashing specific columns with favorited algorithms including: `MD2, MD5, SHA224, SHA256 and SHA512`. As our particular purpose requires the outcome in csv format, then the csv output support is included in this project as well.
 
- You can directly download the compiled output file [HERE](./misc/nifi-HashColumn-nar-1.0.nar) and test with your data flow. (put nar file in `lib` folder of Nifi installed location, restart required to get the imported processor showing up)
+ You can directly download the compiled output file [HERE](./misc/nifi-HashColumn-nar-1.0.nar) and test with your data flow. (put nar file in `lib` folder of Nifi installed location, restart is required to get the imported processor showing up)
 
 <p align="center">
     <image src="./misc/add_processor.png" width="41%"/>
